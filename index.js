@@ -10,6 +10,8 @@ const p = require('path')
 // npm
 const globby = require('globby')
 
+let names = [];
+
 //----------------------------------------------------------
 // logic
 //----------------------------------------------------------
@@ -21,15 +23,29 @@ const globby = require('globby')
  * @returns {undefined}
  */
 function writeOut(dir, subdir) {
+  let importStr = globby.sync(p.join(dir, subdir, `*.ts`))
+    .map(file => file.replace(dir, '.'))
+    .map(file => file.replace(`.ts`, ''))
+    .map(file => {
+      let clName = capitalizeFirstLetter(p.basename(file));
+      names.push(clName);
+      return `import { ${clName} } from '${file}';`;
+    })
+
+    .join('\n')
+    .concat('\n');
+
+  let arrayStr = `let allHandlers = [${names.join(', ')}];`;
+  let exportStr = 'export default { allHandlers };';
+  let finStr = importStr.concat('\n', arrayStr, '\n', '\n', exportStr);
   return fs.writeFileSync(
-    p.join(dir, `${subdir}.js`),
-    globby.sync(p.join(dir, subdir, `*.js`))
-      .map(file => file.replace(dir, '.'))
-      .map(file => file.replace(`.js`, ''))
-      .map(file => `import '${file}'`)
-      .join('\n')
-      .concat('\n')
+    p.join(dir, `index.ts`),
+    finStr
   )
+}
+
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 /**
