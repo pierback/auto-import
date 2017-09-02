@@ -35,8 +35,8 @@ function writeOut(dir, subdir) {
     .join('\n')
     .concat('\n');
 
-  let arrayStr = `let allHandlers = [${names.join(', ')}];`;
-  let exportStr = 'export default { allHandlers };';
+  let arrayStr = `let extHandlers = [${names.join(', ')}];`;
+  let exportStr = 'export { extHandlers };';
   let finStr = importStr.concat('\n', arrayStr, '\n', '\n', exportStr);
   return fs.writeFileSync(
     p.join(dir, `index.ts`),
